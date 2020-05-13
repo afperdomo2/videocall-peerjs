@@ -1,52 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-	<title>Document</title>
-	<link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-	<link rel="stylesheet" href="css/styles.css"/>
-	<link rel="stylesheet" href="css/main.css"/>
-</head>
-<body>
-	<h1>Medico</h1>
-	<div id="selectSource" class="hidden">
-    <div id="select">Select an audio &amp; video source, then click <strong>Get media</strong>:</div>
-    <div class="source">
-      <label for="audioSrc">Audio source:</label>
-      <select id="audioSrc"></select>
-    </div>
-    <div class="source">
-      <label for="videoSrc">Video source:</label>
-      <select id="videoSrc"></select>
-    </div>
-  </div>
-	<div id="buttons">
-    <button id="getMedia">Get media</button>
-    <button id="createPeerConnection" disabled="">Create peer connection</button>
-    <button id="createOffer" disabled="">Create offer</button>
-    <button id="setOffer" disabled="">Set offer</button>
-    <button id="createAnswer" disabled="">Create answer</button>
-    <button id="setAnswer" disabled="">Set answer</button>
-    <button id="hangup" disabled="">Hang up</button>
-  </div>
-  <div id="preview">
-    <div id="local">
-      <h2>Local</h2>
-      <video playsinline autoplay muted></video>
-      <h2>Offer SDP</h2>
-      <textarea></textarea>
-      <br>
-      <br>
-    </div>
-    <div id="remote">
-      <h2>Remote</h2>
-      <video playsinline autoplay></video>
-      <h2>Answer SDP</h2>
-      <textarea></textarea>
-    </div>
-  </div>
-</body>
-<script type="text/javascript" src="index.js"></script>
-<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        
+        <title>Peer-to-Peer Cue System</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+		<h1>Peer-to-Peer Cue System</h1>
+	
+		<div style="position: relative; top: 10px; margin-left: 40px; line-height: 20px;">
+			<a href="receive.html" target="_blank">receive.html</a>
+			
+			<br><br>
+			
+			<a href="send.html" target="_blank">send.html</a>
+			
+			<br><br><br>
+			
+			<iframe src="README.md" style="width: 95%; height: 75vh;">
+		</div>
+		
+    </body>
 </html>
