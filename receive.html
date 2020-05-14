@@ -7,10 +7,27 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
+        <div id="selectSource" class="">
+            <div id="select">Select an audio &amp; video source, then click <strong>Get media</strong>:</div>
+            <div class="source">
+                <label for="audioSrc">Audio source:</label>
+                <select id="audioSrc"></select>
+            </div>
+            <div class="source">
+                <label for="videoSrc">Video source:</label>
+                <select id="videoSrc"></select>
+            </div>
+        </div>
+        <hr>
         <table class="display">
             <tr>
                 <td class="title">Status:</td>
                 <td class="title">Messages:</td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="getMedia">Get media and Answer</button>
+                </td>
             </tr>
             <tr>
                 <td>
@@ -26,35 +43,53 @@
                 <td><div id="status" class="status"></div></td>
                 <td><div class="message" id="message"></div></td>
             </tr>
-            <tr>
+            <tr hidden="">
                 <td class="display-box standby" id="standby"><h2>Standby</h2></td>
                 <td class="display-box hidden" id="go"><h2>Go</h2></td>
             </tr>
-            <tr>
+            <tr hidden="">
                 <td class="display-box hidden" id="fade"><h2>Fade</h2></td>
                 <td class="display-box hidden" id="off"><h2>All Off</h2></td>
             </tr>
         </table>
-
+        <div id="preview border">
+            <div id="local" style="width:50%; float:left">
+                <h6>Local</h6>
+                <video playsinline autoplay muted></video>
+            </div>
+            <div id="remote" style="width:50%; float:left">
+                <h6>Remote</h6>
+                <video playsinline autoplay></video>
+            </div>
+        </div>
         <script src="https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js"></script>
         <script type="text/javascript">
             (function () {
 
-                var lastPeerId      = null;
-                var peer            = null; // Own peer object
-                var peerId          = null;
-                var conn            = null;
-                var recvId          = document.getElementById("receiver-id");
-                var status          = document.getElementById("status");
-                var message         = document.getElementById("message");
-                var standbyBox      = document.getElementById("standby");
-                var goBox           = document.getElementById("go");
-                var fadeBox         = document.getElementById("fade");
-                var offBox          = document.getElementById("off");
-                var sendMessageBox  = document.getElementById("sendMessageBox");
-                var sendButton      = document.getElementById("sendButton");
-                var clearMsgsButton = document.getElementById("clearMsgsButton");
+                let lastPeerId = null;
+                let peer = null; // Own peer object
+                let peerId = null;
+                let conn = null;
+                let call = null;
+                let recvId             = document.getElementById("receiver-id");
+                let status             = document.getElementById("status");
+                let message            = document.getElementById("message");
+                let standbyBox         = document.getElementById("standby");
+                let goBox              = document.getElementById("go");
+                let fadeBox            = document.getElementById("fade");
+                let offBox             = document.getElementById("off");
+                let sendMessageBox     = document.getElementById("sendMessageBox");
+                let sendButton         = document.getElementById("sendButton");
+                let clearMsgsButton    = document.getElementById("clearMsgsButton");
 
+                let getMediaButton     = document.querySelector('button#getMedia');
+                const localVideo       = document.querySelector('div#local video');
+                getMediaButton.onclick = getMedia;
+                const audioSelect      = document.querySelector('select#audioSrc');
+                const videoSelect      = document.querySelector('select#videoSrc');
+                audioSelect.onchange   = videoSelect.onchange = getMedia;
+                let localStream;
+                getMediaButton.disabled = true;
                 /**
                  * Create the Peer object for our end of the connection.
                  *
@@ -66,7 +101,6 @@
                     peer = new Peer(null, {
                         debug: 2
                     });
-
                     peer.on('open', function (id) {
                         // Workaround for peer.reconnect deleting previous id
                         if (peer.id === null) {
@@ -80,6 +114,11 @@
                         recvId.innerHTML = "ID: " + peer.id;
                         status.innerHTML = "Awaiting connection...";
                     });
+                    peer.on('call', function(callPeer) {
+                        // Answer the call, providing our mediaStream
+                        getMediaButton.disabled = false;
+                        call = callPeer;
+                    });
                     peer.on('connection', function (c) {
                         // Allow only a single connection
                         if (conn && conn.open) {
@@ -89,7 +128,6 @@
                             });
                             return;
                         }
-
                         conn = c;
                         console.log("Connected to: " + conn.peer);
                         status.innerHTML = "Connected";
@@ -114,7 +152,41 @@
                         alert('' + err);
                     });
                 };
-
+                async function getMedia() {
+                    if (localStream) {
+                      localVideo.srcObject = null;
+                      localStream.getTracks().forEach(track => track.stop());
+                    }
+                    const audioSource = audioSelect.value;
+                    console.log(`Selected audio source: ${audioSource}`);
+                    const videoSource = videoSelect.value;
+                    console.log(`Selected video source: ${videoSource}`);
+                    const constraints = {
+                      audio: {
+                        optional: [{
+                          sourceId: audioSource
+                        }]
+                      },
+                      video: {
+                        optional: [{
+                          sourceId: videoSource
+                        }]
+                      }
+                    };
+                    console.log('Requested local stream');
+                    try {
+                      const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
+                      call.answer(userMedia);
+                      gotStream(userMedia);
+                    } catch (e) {
+                      console.log('navigator.getUserMedia error: ', e);
+                    }
+                }
+                function gotStream(stream) {
+                    console.log('Received local stream');
+                    localVideo.srcObject = stream;
+                    localStream = stream;
+                }
                 /**
                  * Triggered once a connection has been achieved.
                  * Defines callbacks to handle incoming data and connection events.
@@ -210,6 +282,7 @@
 
                 // Listen for enter in message box
                 sendMessageBox.addEventListener('keypress', function (e) {
+                    console.log('enviar mensaje')
                     var event = e || window.event;
                     var char = event.which || event.keyCode;
                     if (char == '13')
@@ -217,6 +290,7 @@
                 });
                 // Send message
                 sendButton.addEventListener('click', function () {
+                    console.log('presionar boton')
                     if (conn && conn.open) {
                         var msg = sendMessageBox.value;
                         sendMessageBox.value = "";

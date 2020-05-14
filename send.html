@@ -8,7 +8,17 @@
     </head>
     <body>
         <h1>Peer-to-Peer Cue System --- Sender</h1>
-
+        <div id="selectSource" class="">
+            <div id="select">Select an audio &amp; video source, then click <strong>Get media</strong>:</div>
+            <div class="source">
+                <label for="audioSrc">Audio source:</label>
+                <select id="audioSrc"></select>
+            </div>
+            <div class="source">
+                <label for="videoSrc">Video source:</label>
+                <select id="videoSrc"></select>
+            </div>
+        </div>
         <table class="control">
             <tr>
                 <td class="title">Status:</td>
@@ -19,6 +29,7 @@
                     <span style="font-weight: bold">ID: </span>
                     <input type="text" id="receiver-id" title="Input the ID from receive.html">
                     <button id="connect-button">Connect</button>
+                    <button id="getMedia">Get media and Call</button>
                 </td>
                 <td>
                     <input type="text" id="sendMessageBox" placeholder="Enter a message..." autofocus="true" />
@@ -30,7 +41,7 @@
                 <td><div id="status" class="status"></div></td>
                 <td><div class="message" id="message"></div></td>
             </tr>
-            <tr>
+            <tr hidden="">
                 <td>
                     <button type="button" class="control-button" id="resetButton">Reset</button>
                 </td>
@@ -38,7 +49,7 @@
                     <button type="button" class="control-button" id="goButton">Go</button>
                 </td>
             </tr>
-            <tr>
+            <tr hidden="">
                 <td>
                     <button type="button" class="control-button" id="fadeButton">Fade</button>
                 </td>
@@ -47,27 +58,47 @@
                 </td>
             </tr>
         </table>
-
+        <hr>
+        <div id="preview border">
+            <div id="local" style="width:50%; float:left">
+                <h6>Local</h6>
+                <video playsinline autoplay muted></video>
+            </div>
+            <div id="remote" style="width:50%; float:left">
+                <h6>Remote</h6>
+                <video playsinline autoplay></video>
+            </div>
+        </div>
         <script src="https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js"></script>
         <script type="text/javascript">
             (function () {
 
-                var lastPeerId = null;
-                var peer = null; // own peer object
-                var conn = null;
-                var recvIdInput = document.getElementById("receiver-id");
-                var status = document.getElementById("status");
-                var message = document.getElementById("message");
-                var goButton = document.getElementById("goButton");
-                var resetButton = document.getElementById("resetButton");
-                var fadeButton = document.getElementById("fadeButton");
-                var offButton = document.getElementById("offButton");
-                var sendMessageBox = document.getElementById("sendMessageBox");
-                var sendButton = document.getElementById("sendButton");
-                var clearMsgsButton = document.getElementById("clearMsgsButton");
-                var connectButton = document.getElementById("connect-button");
-                var cueString = "<span class=\"cueMsg\">Cue: </span>";
+                let lastPeerId = null;
+                let peer = null; // own peer object
+                let conn = null;
+                let call = null;
+                let recvIdInput        = document.getElementById("receiver-id");
+                let status             = document.getElementById("status");
+                let message            = document.getElementById("message");
+                let goButton           = document.getElementById("goButton");
+                let resetButton        = document.getElementById("resetButton");
+                let fadeButton         = document.getElementById("fadeButton");
+                let offButton          = document.getElementById("offButton");
+                let sendMessageBox     = document.getElementById("sendMessageBox");
+                let sendButton         = document.getElementById("sendButton");
+                let clearMsgsButton    = document.getElementById("clearMsgsButton");
+                let connectButton      = document.getElementById("connect-button");
+                let cueString          = "<span class=\"cueMsg\">Cue: </span>";
 
+                let getMediaButton     = document.querySelector('button#getMedia');
+                const localVideo       = document.querySelector('div#local video');
+                const remoteVideo      = document.querySelector('div#remote video');
+                getMediaButton.onclick = getMedia;
+                const audioSelect      = document.querySelector('select#audioSrc');
+                const videoSelect      = document.querySelector('select#videoSrc');
+                audioSelect.onchange   = videoSelect.onchange = getMedia;
+                let localStream;
+                //************
                 /**
                  * Create the Peer object for our end of the connection.
                  *
@@ -152,7 +183,51 @@
                         status.innerHTML = "Connection closed";
                     });
                 };
-
+                async function getMedia() {
+                    if (localStream) {
+                      localVideo.srcObject = null;
+                      localStream.getTracks().forEach(track => track.stop());
+                    }
+                    const audioSource = audioSelect.value;
+                    console.log(`Selected audio source: ${audioSource}`);
+                    const videoSource = videoSelect.value;
+                    console.log(`Selected video source: ${videoSource}`);
+                    const constraints = {
+                      audio: {
+                        optional: [{
+                          sourceId: audioSource
+                        }]
+                      },
+                      video: {
+                        optional: [{
+                          sourceId: videoSource
+                        }]
+                      }
+                    };
+                    console.log('Requested local stream');
+                    try {
+                        const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
+                        call = peer.call(recvIdInput.value,userMedia);
+                        gotStream(userMedia);
+                        call.on('stream', function(stream) {
+                            console.log('--> SE RECIBIO LA RESPUESTA -->');
+                            gotRemoteStream(stream);
+                        });
+                    } catch (e) {
+                      console.log('navigator.getUserMedia error: ', e);
+                    }
+                }
+                function gotStream(stream) {
+                    console.log(stream);
+                    console.log('-----> 11111111111111 -----> Received local stream');
+                    localVideo.srcObject = stream;
+                    localStream = stream;
+                }
+                function gotRemoteStream(stream) {
+                    console.log(stream);
+                    console.log('-----> 222222222222222 -----> Received remote stream');
+                    remoteVideo.srcObject = stream;
+                }
                 /**
                  * Get first "GET style" parameter from href.
                  * This enables delivering an initial command upon page load.
@@ -241,7 +316,6 @@
                         console.log('Connection is closed');
                     }
                 });
-
                 // Clear messages box
                 clearMsgsButton.addEventListener('click', clearMessages);
                 // Start peer connection on click
@@ -249,6 +323,7 @@
 
                 // Since all our callbacks are setup, start the process of obtaining an ID
                 initialize();
+
             })();
         </script>
     </body>
