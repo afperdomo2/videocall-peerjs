@@ -37,7 +37,7 @@
                     <button type="button" id="clearMsgsButton">Clear Msgs (Local)</button>
                 </td>
             </tr>
-            <tr>
+            <tr hidden="">
                 <td><div id="status" class="status"></div></td>
                 <td><div class="message" id="message"></div></td>
             </tr>
@@ -59,15 +59,13 @@
             </tr>
         </table>
         <hr>
-        <div id="preview border">
-            <div id="local" style="width:50%; float:left">
-                <h6>Local</h6>
-                <video playsinline autoplay muted></video>
-            </div>
-            <div id="remote" style="width:50%; float:left">
-                <h6>Remote</h6>
-                <video playsinline autoplay></video>
-            </div>
+        <div id="local" style="width:50%; float:left">
+            <h6>Local</h6>
+            <video playsinline autoplay muted></video>
+        </div>
+        <div id="remote" style="width:50%; float:left">
+            <h6>Remote</h6>
+            <video playsinline autoplay></video>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js"></script>
         <script type="text/javascript">

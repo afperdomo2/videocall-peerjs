@@ -52,15 +52,13 @@
                 <td class="display-box hidden" id="off"><h2>All Off</h2></td>
             </tr>
         </table>
-        <div id="preview border">
-            <div id="local" style="width:50%; float:left">
-                <h6>Local</h6>
-                <video playsinline autoplay muted></video>
-            </div>
-            <div id="remote" style="width:50%; float:left">
-                <h6>Remote</h6>
-                <video playsinline autoplay></video>
-            </div>
+        <div id="local" style="width:50%; float:left">
+            <h6>Local</h6>
+            <video playsinline autoplay muted></video>
+        </div>
+        <div id="remote" style="width:50%; float:left">
+            <h6>Remote</h6>
+            <video playsinline autoplay></video>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js"></script>
         <script type="text/javascript">
@@ -84,6 +82,7 @@
 
                 let getMediaButton     = document.querySelector('button#getMedia');
                 const localVideo       = document.querySelector('div#local video');
+                const remoteVideo      = document.querySelector('div#remote video');
                 getMediaButton.onclick = getMedia;
                 const audioSelect      = document.querySelector('select#audioSrc');
                 const videoSelect      = document.querySelector('select#videoSrc');
@@ -118,6 +117,10 @@
                         // Answer the call, providing our mediaStream
                         getMediaButton.disabled = false;
                         call = callPeer;
+                        call.on('stream', function(stream) {
+                            console.log('--> SE RECIBIO LA RESPUESTA -->');
+                            gotRemoteStream(stream);
+                        });
                     });
                     peer.on('connection', function (c) {
                         // Allow only a single connection
@@ -175,9 +178,9 @@
                     };
                     console.log('Requested local stream');
                     try {
-                      const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
-                      call.answer(userMedia);
-                      gotStream(userMedia);
+                        const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
+                        call.answer(userMedia);
+                        gotStream(userMedia);
                     } catch (e) {
                       console.log('navigator.getUserMedia error: ', e);
                     }
@@ -186,6 +189,10 @@
                     console.log('Received local stream');
                     localVideo.srcObject = stream;
                     localStream = stream;
+                }
+                function gotRemoteStream(stream) {
+                    console.log('Received remote stream');
+                    remoteVideo.srcObject = stream;
                 }
                 /**
                  * Triggered once a connection has been achieved.
