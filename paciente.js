@@ -36,11 +36,10 @@ document.addEventListener('DOMContentLoaded',event=>{
     try {
       const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
       call.answer(userMedia);
-      localVideo.srcObject = userMedia;
-      localStream          = userMedia;
-      divPreCall.hidden    = true;
-      alertCall.hidden     = true;
-      divCall.hidden       = false;
+      gotStream(userMedia);
+      divPreCall.hidden = true;
+      alertCall.hidden  = true;
+      divCall.hidden    = false;
     } catch (e) {
       console.log('navigator.getUserMedia error: ', e);
     }
@@ -74,7 +73,7 @@ document.addEventListener('DOMContentLoaded',event=>{
       alertCall.hidden = false;
       call = callRemotePeer;
       call.on('stream', function(stream) {
-        remoteVideo.srcObject = stream;
+        gotRemoteStream(stream);
       });
     });
     peer.on('connection', function (connRemotePeer) {
@@ -109,4 +108,11 @@ document.addEventListener('DOMContentLoaded',event=>{
       alert('' + err);
     });
   };
+  function gotStream(stream) {
+    localVideo.srcObject = stream;
+    localStream = stream;
+  }
+  function gotRemoteStream(stream) {
+    remoteVideo.srcObject = stream;
+  }
 });

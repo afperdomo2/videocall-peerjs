@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded',event=>{
   idRemotePeer.value   = '';
   idRemotePeer.onkeyup = validateCallButton;
   idRemotePeer.onblur  = validateCallButton;
-  callButton.onclick  = callPeer;
+  callButton.onclick   = callPeer;
   deleteId.addEventListener('click',()=>{
     idRemotePeer.disabled = false;
     idRemotePeer.value    = '';
@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded',event=>{
   function callPeer()
   {
     idRemotePeer.disabled = true;
-    callButton.hidden    = true;
-    callingButton.hidden = false;
+    callButton.hidden     = true;
+    callingButton.hidden  = false;
     getMediaAndCall();
   }
   async function getMediaAndCall()
@@ -54,17 +54,23 @@ document.addEventListener('DOMContentLoaded',event=>{
     };
     try {
       const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
+      gotStream(userMedia);
       call = peer.call(idRemotePeer.value,userMedia);
       call.on('stream', function(stream) {
-        remoteVideo.srcObject = stream;
-        divPreCall.hidden     = true;
-        divCall.hidden        = false;
+        gotRemoteStream(stream);
+        divPreCall.hidden = true;
+        divCall.hidden    = false;
       });
-      localVideo.srcObject = userMedia;
-      localStream          = userMedia;
     } catch (e) {
       console.log('navigator.getUserMedia error: ', e);
     }
+  }
+  function gotStream(stream) {
+    localVideo.srcObject = stream;
+    localStream          = stream;
+  }
+  function gotRemoteStream(stream) {
+    remoteVideo.srcObject = stream;
   }
   //  Creamos el objeto Peer y configuramos los escuchadores.
   function initialize() {
