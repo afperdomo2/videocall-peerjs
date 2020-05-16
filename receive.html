@@ -8,7 +8,7 @@
     </head>
     <body>
         <div id="selectSource" class="">
-            <div id="select">Select an audio &amp; video source, then click <strong>Get media</strong>: 111</div>
+            <div id="select">Select an audio &amp; video source, then click <strong>Get media</strong>: 22222222</div>
             <div class="source">
                 <label for="audioSrc">Audio source:</label>
                 <select id="audioSrc"></select>
@@ -104,26 +104,9 @@
                     peer = new Peer(null, {
                         debug: 2,
                         config: {'iceServers': [
-                        	{url:'stun:stun01.sipphone.com'},
-													{url:'stun:stun.ekiga.net'},
-													{url:'stun:stun.fwdnet.net'},
-													{url:'stun:stun.ideasip.com'},
-													{url:'stun:stun.iptel.org'},
-													{url:'stun:stun.rixtelecom.se'},
-													{url:'stun:stun.schlund.de'},
-													{url:'stun:stun.l.google.com:19302'},
-													{url:'stun:stun1.l.google.com:19302'},
-													{url:'stun:stun2.l.google.com:19302'},
-													{url:'stun:stun3.l.google.com:19302'},
-													{url:'stun:stun4.l.google.com:19302'},
-													{url:'stun:stunserver.org'},
-													{url:'stun:stun.softjoys.com'},
-													{url:'stun:stun.voiparound.com'},
-													{url:'stun:stun.voipbuster.com'},
-													{url:'stun:stun.voipstunt.com'},
-													{url:'stun:stun.voxgratia.org'},
-													{url:'stun:stun.xten.com'}
-                        ]}
+                        	{url:'stun:stun01.sipphone.com'}
+                        ]},
+                        sdpSemantics: 'unified-plan'
                     });
                     peer.on('open', function (id) {
                         // Workaround for peer.reconnect deleting previous id
