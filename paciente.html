@@ -11,7 +11,7 @@
 <body class="mt-2">
   <div class="container">
     <div class="row">
-      <h1 class="mx-auto">Prueba de Video Chat - Médico</h1>
+      <h1 class="mx-auto">Prueba de Video Chat - Paciente</h1>
     </div>
     <hr class="mt-1 mb-1">
     <div class="row pl-1 pr-1" id="divPreCall">
@@ -20,20 +20,24 @@
           <select id="audioSrc"></select>
           <select id="videoSrc"></select>
         </div>
-        <label for="idRemotePeer" class="font-weight-bold">ID del paciente:</label>
+        <label for="idLocalPeer" class="font-weight-bold">Tu ID es:</label>
         <div class="input-group">
-          <input type="text" class="form-control form-control-sm text-center" id="idRemotePeer" disabled>
-          <button class="btn btn-sm btn-danger ml-2" id="deleteId">
-            <span class="icon-cross"></span>
-          </button>
-          <button class="btn btn-sm btn-success ml-2" id="callButton" disabled>
-            <span class="icon-phone"></span> LLamar
-          </button>
-          <button class="btn btn-sm btn-success ml-2" type="button" id="callingButton" disabled hidden>
-            <span class="spinner-grow spinner-grow-sm icon-phone bg-success" role="status" aria-hidden="true"></span>
-            Llamando
+          <input type="text" class="form-control form-control-sm text-center" id="idLocalPeer" readonly>
+          <button class="btn btn-sm btn-success ml-2 copy" data-clipboard-target="#idLocalPeer">
+            <span class="icon-copy"></span> Copy ID
           </button>
         </div>
+      </div>
+    </div>
+    <div class="row pl-3 pr-3" id="alertCall" hidden>
+      <div class="col-lg-12 col-md-12 alert alert-success">
+        <div class="spinner-grow spinner-grow-sm mt-1" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        &ensp;El médico te está llamando&ensp;
+        <button class="btn btn-sm btn-success" id="answerCall">
+          <span class="icon-phone"></span> Contestar
+        </button>
       </div>
     </div>
     <!-- <hr class="mt-1 mb-1"> -->
@@ -44,7 +48,7 @@
             <video class="embed-responsive-item" id="localVideo" playsinline autoplay muted></video>
           </div>
           <div class="bg-secondary text-white text-center pb-1">
-            <span class="icon-user"></span> Médico
+            <span class="icon-user"></span> Paciente
           </div>
         </div>
         <div class="col-lg-6 col-md-6">
@@ -52,7 +56,7 @@
             <video class="embed-responsive-item" id="remoteVideo" playsinline autoplay></video>
           </div>
           <div class="bg-secondary text-white text-center pb-1">
-            <span class="icon-user"></span> Paciente
+            <span class="icon-user"></span> Médico
           </div>
         </div>
         <div class="col-lg-12 col-md-12 pt-2 pb-2">
@@ -67,12 +71,12 @@
         </div>
       </div>
     </div>
-
     <div id="status" hidden></div>
   </div>
 </body>
 <!-- <script src="node_modules/jquery/dist/jquery.min.js"></script>
 <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script> -->
 <script src="https://unpkg.com/peerjs@1.2.0/dist/peerjs.min.js"></script>
-<script type="text/javascript" src="index.js"></script>
+<script type="text/javascript" src="paciente.js"></script>
+<script src="https://cdn.rawgit.com/zenorocha/clipboard.js/v1.5.3/dist/clipboard.min.js"></script>
 </html>
