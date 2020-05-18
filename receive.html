@@ -1,80 +1,70 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <link rel="stylesheet" href="css/bootstrap.css">
-  <link rel="stylesheet" href="css/iconmoon.css">
-</head>
-<body class="mt-2">
-  <div class="container">
-    <div class="row">
-      <h1 class="mx-auto">Prueba de Video Chat - Paciente</h1>
-    </div>
-    <hr class="mt-1 mb-1">
-    <!-- SELECCIÓN DE MEDIOS. -->
-    <div id="selectSource" hidden>
-      <div id="select">Select an audio &amp; video source, then click <strong>Get media</strong>:</div>
-      <div class="source">
-        <label for="audioSrc">Audio source:</label>
-        <select id="audioSrc"></select>
-      </div>
-      <div class="source">
-        <label for="videoSrc">Video source:</label>
-        <select id="videoSrc"></select>
-      </div>
-    </div>
-    <table class="display">
-      <tr>
-        <td class="title">Status:</td>
-      </tr>
-      <tr>
-        <td>
-            <button id="getMedia">Get media and Answer</button>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <input type="text" class="form-control form-control-sm text-center" id="receiver-id">
-        </td>
-        <td hidden>
-          <input type="text" id="sendMessageBox" placeholder="Enter a message..." />
-          <button type="button" id="sendButton">Send</button>
-          <button type="button" id="clearMsgsButton">Clear Msgs (Local)</button>
-        </td>
-      </tr>
-      <!-- CAPTURAMOS MENSAJES. -->
-      <tr>
-        <td><div id="status" class="status"></div></td>
-        <td><div class="message" id="message"></div></td>
-      </tr>
-        <tr hidden>
-        <td class="display-box standby" id="standby"><h2>Standby</h2></td>
-        <td class="display-box hidden" id="go"><h2>Go</h2></td>
-      </tr>
-      <tr hidden>
-        <td class="display-box hidden" id="fade"><h2>Fade</h2></td>
-        <td class="display-box hidden" id="off"><h2>All Off</h2></td>
-      </tr>
-    </table>
-    <!-- VIDEO -->
-    <div class="row border border-secondary">
-      <div id="local">
-        <h6>Local</h6>
-        <video playsinline autoplay muted></video>
-      </div>
-    </div>
-    <br>
-    <div class="row border border-secondary">
-      <div id="remote">
-        <h6>Remote</h6>
-        <video playsinline autoplay></video>
-      </div>
-    </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js"></script>
-  <script type="text/javascript" src="receive.js"></script>
-  <!-- <script src="https://unpkg.com/peerjs@1.2.0/dist/peerjs.min.js"></script> -->
-</body>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width">
+        <title>Peer-to-Peer Cue System --- Reciever</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div id="selectSource" class="">
+            <div id="select">Select an audio &amp; video source, then click <strong>Get media</strong>:</div>
+            <div class="source">
+                <label for="audioSrc">Audio source:</label>
+                <select id="audioSrc"></select>
+            </div>
+            <div class="source">
+                <label for="videoSrc">Video source:</label>
+                <select id="videoSrc"></select>
+            </div>
+        </div>
+        <hr>
+        <table class="display">
+            <tr>
+                <td class="title">Status:</td>
+                <td class="title">Messages:</td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="getMedia">Get media and Answer</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="receiver-id" style="font-weight: bold;" title="Copy this ID to the input on send.html.">ID:</div>
+                </td>
+                <td>
+                    <input type="text" id="sendMessageBox" placeholder="Enter a message..." autofocus="true" />
+                    <button type="button" id="sendButton">Send</button>
+                    <button type="button" id="clearMsgsButton">Clear Msgs (Local)</button>
+                </td>
+            </tr>
+            <tr>
+                <td><div id="status" class="status"></div></td>
+                <td><div class="message" id="message"></div></td>
+            </tr>
+            <tr hidden="">
+                <td class="display-box standby" id="standby"><h2>Standby</h2></td>
+                <td class="display-box hidden" id="go"><h2>Go</h2></td>
+            </tr>
+            <tr hidden="">
+                <td class="display-box hidden" id="fade"><h2>Fade</h2></td>
+                <td class="display-box hidden" id="off"><h2>All Off</h2></td>
+            </tr>
+        </table>
+        <div class="row">
+            <div id="local">
+                <h6>Local</h6>
+                <video playsinline autoplay muted></video>
+            </div>
+        </div>
+        <div class="row">
+            <div id="remote">
+                <h6>Remote</h6>
+                <video playsinline autoplay></video>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js"></script>
+        <script type="text/javascript" src="receive.js"></script>
+    </body>
 </html>

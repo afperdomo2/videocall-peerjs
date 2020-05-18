@@ -1,254 +1,261 @@
 (function () {
-    let lastPeerId = null;
-    let peer = null; // Own peer object
-    let peerId = null;
-    let conn = null;
-    let call = null;
-    let recvId             = document.getElementById("receiver-id");
-    let status             = document.getElementById("status");
-    let message            = document.getElementById("message");
-    let standbyBox         = document.getElementById("standby");
-    let goBox              = document.getElementById("go");
-    let fadeBox            = document.getElementById("fade");
-    let offBox             = document.getElementById("off");
-    let sendMessageBox     = document.getElementById("sendMessageBox");
-    let sendButton         = document.getElementById("sendButton");
-    let clearMsgsButton    = document.getElementById("clearMsgsButton");
 
-    let getMediaButton     = document.querySelector('button#getMedia');
-    const localVideo       = document.querySelector('div#local video');
-    const remoteVideo      = document.querySelector('div#remote video');
-    getMediaButton.onclick = getMedia;
-    const audioSelect      = document.querySelector('select#audioSrc');
-    const videoSelect      = document.querySelector('select#videoSrc');
-    audioSelect.onchange   = videoSelect.onchange = getMedia;
-    let localStream;
-    getMediaButton.disabled = true;
-    /**
-     * Create the Peer object for our end of the connection.
-     *
-     * Sets up callbacks that handle any events related to our
-     * peer object.
-     */
-     function initialize() {
-        // Create own peer object with connection to shared PeerJS server
-        peer = new Peer(null, {
-            debug: 2,
-            config: {'iceServers': [
-                { url: 'stun:stun.l.google.com:19302' },
-                { url: 'turn:numb.viagenie.ca', credential: 'muazkh', username: 'webrtc@live.com' }
-            ]}
-        });
-        peer.on('open', function (id) {
-            // Workaround for peer.reconnect deleting previous id
-            if (peer.id === null) {
-                console.log('Received null id from peer open');
-                peer.id = lastPeerId;
-            } else {
-                lastPeerId = peer.id;
-            }
+  let lastPeerId = null;
+  let peer = null; // Own peer object
+  let peerId = null;
+  let conn = null;
+  let call = null;
+  let recvId             = document.getElementById("receiver-id");
+  let status             = document.getElementById("status");
+  let message            = document.getElementById("message");
+  let standbyBox         = document.getElementById("standby");
+  let goBox              = document.getElementById("go");
+  let fadeBox            = document.getElementById("fade");
+  let offBox             = document.getElementById("off");
+  let sendMessageBox     = document.getElementById("sendMessageBox");
+  let sendButton         = document.getElementById("sendButton");
+  let clearMsgsButton    = document.getElementById("clearMsgsButton");
 
-            console.log('ID: ' + peer.id);
-            recvId.value = peer.id;
-        });
-        peer.on('call', function(callPeer) {
-            // Answer the call, providing our mediaStream
-            getMediaButton.disabled = false;
-            call = callPeer;
-            call.on('stream', function(stream) {
-                console.log('--> SE RECIBIO LA RESPUESTA -->');
-                gotRemoteStream(stream);
-            });
-        });
-        peer.on('connection', function (c) {
-            // Allow only a single connection
-            if (conn && conn.open) {
-                c.on('open', function() {
-                    c.send("Already connected to another client");
-                    setTimeout(function() { c.close(); }, 500);
-                });
-                return;
-            }
-            conn = c;
-            console.log("Connected to: " + conn.peer);
-            status.innerHTML = "Connected";
-            ready();
-        });
-        peer.on('disconnected', function () {
-            status.innerHTML = "Connection lost. Please reconnect";
-            console.log('Connection lost. Please reconnect');
-
-            // Workaround for peer.reconnect deleting previous id
-            peer.id = lastPeerId;
-            peer._lastServerId = lastPeerId;
-            peer.reconnect();
-        });
-        peer.on('close', function() {
-            conn = null;
-            status.innerHTML = "Connection destroyed. Please refresh";
-            console.log('Connection destroyed');
-        });
-        peer.on('error', function (err) {
-            console.log(err);
-            alert('' + err);
-        });
-    };
-    async function getMedia() {
-        if (localStream) {
-          localVideo.srcObject = null;
-          localStream.getTracks().forEach(track => track.stop());
-        }
-        const audioSource = audioSelect.value;
-        console.log(`Selected audio source: ${audioSource}`);
-        const videoSource = videoSelect.value;
-        console.log(`Selected video source: ${videoSource}`);
-        const constraints = {
-          audio: {
-            optional: [{
-              sourceId: audioSource
-            }]
-          },
-          video: {
-            optional: [{
-              sourceId: videoSource
-            }]
+  let getMediaButton     = document.querySelector('button#getMedia');
+  const localVideo       = document.querySelector('div#local video');
+  const remoteVideo      = document.querySelector('div#remote video');
+  getMediaButton.onclick = getMedia;
+  const audioSelect      = document.querySelector('select#audioSrc');
+  const videoSelect      = document.querySelector('select#videoSrc');
+  audioSelect.onchange   = videoSelect.onchange = getMedia;
+  let localStream;
+  getMediaButton.disabled = true;
+  /**
+   * Create the Peer object for our end of the connection.
+   *
+   * Sets up callbacks that handle any events related to our
+   * peer object.
+   */
+   function initialize() {
+      // Create own peer object with connection to shared PeerJS server
+      peer = new Peer(null, {
+          debug: 2,
+          config: {'iceServers': [
+              {url:'stun:stun01.sipphone.com'},
+              {url:'stun:stun.ekiga.net'},
+              {url:'stun:stun.fwdnet.net'},
+              {url:'stun:stun.ideasip.com'},
+              {url:'stun:stun.iptel.org'},
+              {url:'stun:stun.rixtelecom.se'},
+              {url:'stun:stun.schlund.de'}
+          ]}
+      });
+      peer.on('open', function (id) {
+          // Workaround for peer.reconnect deleting previous id
+          if (peer.id === null) {
+              console.log('Received null id from peer open');
+              peer.id = lastPeerId;
+          } else {
+              lastPeerId = peer.id;
           }
-        };
-        console.log('Requested local stream');
-        try {
-            const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
-            call.answer(userMedia);
-            gotStream(userMedia);
-        } catch (e) {
-          console.log('navigator.getUserMedia error: ', e);
+
+          console.log('ID: ' + peer.id);
+          recvId.innerHTML = "ID: " + peer.id;
+          status.innerHTML = "Awaiting connection...";
+      });
+      peer.on('call', function(callPeer) {
+          // Answer the call, providing our mediaStream
+          getMediaButton.disabled = false;
+          call = callPeer;
+          call.on('stream', function(stream) {
+              console.log('--> SE RECIBIO LA RESPUESTA -->');
+              gotRemoteStream(stream);
+          });
+      });
+      peer.on('connection', function (c) {
+          // Allow only a single connection
+          if (conn && conn.open) {
+              c.on('open', function() {
+                  c.send("Already connected to another client");
+                  setTimeout(function() { c.close(); }, 500);
+              });
+              return;
+          }
+          conn = c;
+          console.log("Connected to: " + conn.peer);
+          status.innerHTML = "Connected";
+          ready();
+      });
+      peer.on('disconnected', function () {
+          status.innerHTML = "Connection lost. Please reconnect";
+          console.log('Connection lost. Please reconnect');
+
+          // Workaround for peer.reconnect deleting previous id
+          peer.id = lastPeerId;
+          peer._lastServerId = lastPeerId;
+          peer.reconnect();
+      });
+      peer.on('close', function() {
+          conn = null;
+          status.innerHTML = "Connection destroyed. Please refresh";
+          console.log('Connection destroyed');
+      });
+      peer.on('error', function (err) {
+          console.log(err);
+          alert('' + err);
+      });
+  };
+  async function getMedia() {
+      if (localStream) {
+        localVideo.srcObject = null;
+        localStream.getTracks().forEach(track => track.stop());
+      }
+      const audioSource = audioSelect.value;
+      console.log(`Selected audio source: ${audioSource}`);
+      const videoSource = videoSelect.value;
+      console.log(`Selected video source: ${videoSource}`);
+      const constraints = {
+        audio: {
+          optional: [{
+            sourceId: audioSource
+          }]
+        },
+        video: {
+          optional: [{
+            sourceId: videoSource
+          }]
         }
-    }
-    function gotStream(stream) {
-        console.log('Received local stream');
-        localVideo.srcObject = stream;
-        localStream = stream;
-    }
-    function gotRemoteStream(stream) {
-        console.log('Received remote stream');
-        remoteVideo.srcObject = stream;
-    }
-    /**
-     * Triggered once a connection has been achieved.
-     * Defines callbacks to handle incoming data and connection events.
-     */
-    function ready() {
-        conn.on('data', function (data) {
-            console.log("Data recieved");
-            var cueString = "<span class=\"cueMsg\">Cue: </span>";
-            switch (data) {
-                case 'Go':
-                    go();
-                    addMessage(cueString + data);
-                    break;
-                case 'Fade':
-                    fade();
-                    addMessage(cueString + data);
-                    break;
-                case 'Off':
-                    off();
-                    addMessage(cueString + data);
-                    break;
-                case 'Reset':
-                    reset();
-                    addMessage(cueString + data);
-                    break;
-                default:
-                    addMessage("<span class=\"peerMsg\">Peer: </span>" + data);
-                    break;
-            };
-        });
-        conn.on('close', function () {
-            status.innerHTML = "Connection reset<br>Awaiting connection...";
-            conn = null;
-        });
-    }
+      };
+      console.log('Requested local stream');
+      try {
+          const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
+          call.answer(userMedia);
+          gotStream(userMedia);
+      } catch (e) {
+        console.log('navigator.getUserMedia error: ', e);
+      }
+  }
+  function gotStream(stream) {
+      console.log('Received local stream');
+      localVideo.srcObject = stream;
+      localStream = stream;
+  }
+  function gotRemoteStream(stream) {
+      console.log('Received remote stream');
+      remoteVideo.srcObject = stream;
+  }
+  /**
+   * Triggered once a connection has been achieved.
+   * Defines callbacks to handle incoming data and connection events.
+   */
+  function ready() {
+      conn.on('data', function (data) {
+          console.log("Data recieved");
+          var cueString = "<span class=\"cueMsg\">Cue: </span>";
+          switch (data) {
+              case 'Go':
+                  go();
+                  addMessage(cueString + data);
+                  break;
+              case 'Fade':
+                  fade();
+                  addMessage(cueString + data);
+                  break;
+              case 'Off':
+                  off();
+                  addMessage(cueString + data);
+                  break;
+              case 'Reset':
+                  reset();
+                  addMessage(cueString + data);
+                  break;
+              default:
+                  addMessage("<span class=\"peerMsg\">Peer: </span>" + data);
+                  break;
+          };
+      });
+      conn.on('close', function () {
+          status.innerHTML = "Connection reset<br>Awaiting connection...";
+          conn = null;
+      });
+  }
 
-    function go() {
-        standbyBox.className = "display-box hidden";
-        goBox.className = "display-box go";
-        fadeBox.className = "display-box hidden";
-        offBox.className = "display-box hidden";
-        return;
-    };
+  function go() {
+      standbyBox.className = "display-box hidden";
+      goBox.className = "display-box go";
+      fadeBox.className = "display-box hidden";
+      offBox.className = "display-box hidden";
+      return;
+  };
 
-    function fade() {
-        standbyBox.className = "display-box hidden";
-        goBox.className = "display-box hidden";
-        fadeBox.className = "display-box fade";
-        offBox.className = "display-box hidden";
-        return;
-    };
+  function fade() {
+      standbyBox.className = "display-box hidden";
+      goBox.className = "display-box hidden";
+      fadeBox.className = "display-box fade";
+      offBox.className = "display-box hidden";
+      return;
+  };
 
-    function off() {
-        standbyBox.className = "display-box hidden";
-        goBox.className = "display-box hidden";
-        fadeBox.className = "display-box hidden";
-        offBox.className = "display-box off";
-        return;
-    }
+  function off() {
+      standbyBox.className = "display-box hidden";
+      goBox.className = "display-box hidden";
+      fadeBox.className = "display-box hidden";
+      offBox.className = "display-box off";
+      return;
+  }
 
-    function reset() {
-        standbyBox.className = "display-box standby";
-        goBox.className = "display-box hidden";
-        fadeBox.className = "display-box hidden";
-        offBox.className = "display-box hidden";
-        return;
-    };
+  function reset() {
+      standbyBox.className = "display-box standby";
+      goBox.className = "display-box hidden";
+      fadeBox.className = "display-box hidden";
+      offBox.className = "display-box hidden";
+      return;
+  };
 
-    function addMessage(msg) {
-        var now = new Date();
-        var h = now.getHours();
-        var m = addZero(now.getMinutes());
-        var s = addZero(now.getSeconds());
+  function addMessage(msg) {
+      var now = new Date();
+      var h = now.getHours();
+      var m = addZero(now.getMinutes());
+      var s = addZero(now.getSeconds());
 
-        if (h > 12)
-            h -= 12;
-        else if (h === 0)
-            h = 12;
+      if (h > 12)
+          h -= 12;
+      else if (h === 0)
+          h = 12;
 
-        function addZero(t) {
-            if (t < 10)
-                t = "0" + t;
-            return t;
-        };
+      function addZero(t) {
+          if (t < 10)
+              t = "0" + t;
+          return t;
+      };
 
-        message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
-    }
+      message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
+  }
 
-    function clearMessages() {
-        message.innerHTML = "";
-        addMessage("Msgs cleared");
-    }
+  function clearMessages() {
+      message.innerHTML = "";
+      addMessage("Msgs cleared");
+  }
 
-    // Listen for enter in message box
-    sendMessageBox.addEventListener('keypress', function (e) {
-        console.log('enviar mensaje')
-        var event = e || window.event;
-        var char = event.which || event.keyCode;
-        if (char == '13')
-            sendButton.click();
-    });
-    // Send message
-    sendButton.addEventListener('click', function () {
-        console.log('presionar boton')
-        if (conn && conn.open) {
-            var msg = sendMessageBox.value;
-            sendMessageBox.value = "";
-            conn.send(msg);
-            console.log("Sent: " + msg)
-            addMessage("<span class=\"selfMsg\">Self: </span>" + msg);
-        } else {
-            console.log('Connection is closed');
-        }
-    });
+  // Listen for enter in message box
+  sendMessageBox.addEventListener('keypress', function (e) {
+      console.log('enviar mensaje')
+      var event = e || window.event;
+      var char = event.which || event.keyCode;
+      if (char == '13')
+          sendButton.click();
+  });
+  // Send message
+  sendButton.addEventListener('click', function () {
+      console.log('presionar boton')
+      if (conn && conn.open) {
+          var msg = sendMessageBox.value;
+          sendMessageBox.value = "";
+          conn.send(msg);
+          console.log("Sent: " + msg)
+          addMessage("<span class=\"selfMsg\">Self: </span>" + msg);
+      } else {
+          console.log('Connection is closed');
+      }
+  });
 
-    // Clear messages box
-    clearMsgsButton.addEventListener('click', clearMessages);
+  // Clear messages box
+  clearMsgsButton.addEventListener('click', clearMessages);
 
-    initialize();
+  initialize();
 })();
