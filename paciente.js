@@ -1,5 +1,5 @@
 (function (window,document) {
-  console.log(333333333);
+  console.log(22222222);
   //  Video Call.
   let lastPeerId       = null;
   let peer             = null;
@@ -50,8 +50,7 @@
     peer = new Peer(null, {
       debug: 2,
       config: {'iceServers': [
-        { url: 'stun:stun.l.google.com:19302' },
-        { url: 'turn:numb.viagenie.ca', credential: 'muazkh', username: 'webrtc@live.com' }
+        { url: 'stun:stun.l.google.com:19302' }
       ]}
     });
     //  Al establecerse una conexión con PeerServer.
