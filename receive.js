@@ -1,6 +1,5 @@
 (function (window,document) {
   console.log(333333333);
-  //let clipboard = new Clipboard('.copy');
   //  Video Call.
   let lastPeerId       = null;
   let peer             = null;
