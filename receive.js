@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded',event=>{
+(function () {
   let clipboard = new Clipboard('.copy');
   //  Video Call.
   let lastPeerId       = null;
@@ -110,4 +110,4 @@ document.addEventListener('DOMContentLoaded',event=>{
   function gotRemoteStream(stream) {
     remoteVideo.srcObject = stream;
   }
-});
+})();
