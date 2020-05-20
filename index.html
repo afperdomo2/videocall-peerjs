@@ -37,7 +37,7 @@
       </div>
     </div>
     <!-- <hr class="mt-1 mb-1"> -->
-    <div id="divCall" class="m-0 p-0" hidden>
+    <div id="divCall" class="m-0 p-0" >
       <div class="row">
         <div class="col-lg-6 col-md-6">
           <div class="embed-responsive embed-responsive-4by3 border border-secondary">
@@ -60,16 +60,35 @@
             <!-- <button class="btn btn-sm btn-light rounded-circle border">
               <span class="icon-phone-hang-up text-danger"></span>
             </button> -->
-            <button class="btn btn-sm btn-danger ml-2" id="">
-              <span class="icon-phone-hang-up"></span> Colgar la llamada
+            <button class="btn btn-sm btn-danger" id="mutedButton">
+              Desactivar Sonido
+            </button>
+            <button class="btn btn-sm btn-danger ml-1" id="hangupButton">
+              <span class="icon-phone-hang-up"></span> Colgar llamada
             </button>
           </center>
         </div>
+        <div class="col-md-12">
+          <hr class="mt-1 mb-3 p-0">
+          <div class="input-group">
+            <div class="form-group col-md-9 pl-0">
+              <input type="text" class="form-control form-control-sm" id="messageBox">
+            </div>
+            <div class="form-group col-md-3 pr-0">
+              <button class="btn btn-sm btn-success form-control form-control-sm" id="sendMessageButton">
+                <span class="icon-bubble2"></span> Enviar mensaje
+              </button>
+            </div>
+          </div>
+          <div class="col-md-12" id="message"></div>
+        </div>
       </div>
     </div>
-    <div id="status" hidden></div>
+    <hr>
+    <div id="status"></div>
   </div>
 </body>
-<script type="text/javascript" src="js/peerjs.min.js?v=222"></script>
-<script type="text/javascript" src="index.js?v=222"></script>
+<script type="text/javascript" src="js/peerjs.min.js?v=333"></script>
+<script type="text/javascript" src="index.js?v=333"></script>
+<script type="text/javascript" src="funciones.js?v=333"></script>
 </html>

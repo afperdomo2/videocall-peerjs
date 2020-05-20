@@ -1,26 +1,45 @@
 (function (window,document) {
-  console.log(333333333);
   //  Video Call.
-  let lastPeerId       = null;
-  let peer             = null;
-  let peerId           = null;
-  let conn             = null;
-  let call             = null;
-  let idLocalPeer      = document.querySelector('#idLocalPeer');
-  let status           = document.querySelector('#status');
-  let alertCall        = document.querySelector('#alertCall');
-  let answerCall       = document.querySelector('#answerCall');
-  let divPreCall       = document.querySelector('#divPreCall');
-  let divCall          = document.querySelector('#divCall');
-  //  Streaming.
-  const localVideo     = document.querySelector('#localVideo');
-  const remoteVideo    = document.querySelector('#remoteVideo');
-  const audioSelect    = document.querySelector('select#audioSrc');
-  const videoSelect    = document.querySelector('select#videoSrc');
-  audioSelect.onchange = videoSelect.onchange = getMediaAndAnswer;
-  let localStream;
-  answerCall.onclick   = getMediaAndAnswer;
+   let lastPeerId       = null;
+   let peer             = null;
+   let peerId           = null;
+   let conn             = null;
+   let call             = null;
+   let idLocalPeer      = document.querySelector('#idLocalPeer');
+   let status           = document.querySelector('#status');
+   let alertCall        = document.querySelector('#alertCall');
+   let answerCall       = document.querySelector('#answerCall');
+   let divPreCall       = document.querySelector('#divPreCall');
+   let divCall          = document.querySelector('#divCall');
+   let hangupButton     = document.querySelector('#hangupButton');
+   let mutedButton      = document.querySelector('#mutedButton');
+   //  Chat.
+   let messageBox       = document.querySelector('#messageBox');
+   let sendButton       = document.querySelector('#sendMessageButton');
+   let message          = document.querySelector('#message');
+   //  Streaming.
+   const localVideo     = document.querySelector('#localVideo');
+   const remoteVideo    = document.querySelector('#remoteVideo');
+   const audioSelect    = document.querySelector('select#audioSrc');
+   const videoSelect    = document.querySelector('select#videoSrc');
+   audioSelect.onchange = videoSelect.onchange = getMediaAndAnswer;
+   let localStream;
+   //  Eventos botones.
+   hangupButton.onclick = hangupCall;
+   answerCall.onclick   = getMediaAndAnswer;
+   sendButton.onclick   = sendMessage;
+   mutedButton.onclick  = mutedSound;
   initialize();
+  function mutedSound()
+  {
+    if(remoteVideo.muted==false){
+      mutedButton.textContent = 'Activar Sonido';
+      remoteVideo.muted = true;
+    }else{
+      mutedButton.textContent = 'Desactivar Sonido';
+      remoteVideo.muted = false;
+    }
+  }
   async function getMediaAndAnswer()
   {
     if (localStream) {
@@ -44,8 +63,18 @@
       console.log('navigator.getUserMedia error: ', e);
     }
   }
+  function hangupCall()
+  {
+    localVideo.srcObject  = null;
+    remoteVideo.srcObject = null;
+    localStream.getTracks().forEach(track => track.stop());
+    conn.close();
+    conn = null;
+    call.close();
+    call = null;
+  }
   //  Creamos el objeto Peer y configuramos los escuchadores.
-    function initialize() {
+  function initialize() {
     // Create own peer object with connection to shared PeerJS server
     peer = new Peer(null, {
       debug: 2,
@@ -83,6 +112,7 @@
       conn = connRemotePeer;
       console.log("Connected to: " + conn.peer);
       status.innerHTML = "Connected";
+      conn.send(`<b class="text-success"><span class="icon-user-check"></span> El paciente está conectado.</b>`);
       ready();
     });
     peer.on('disconnected', function () {
@@ -94,15 +124,57 @@
       peer.reconnect();
     });
     peer.on('close', function() {
-      conn = null;
-      status.innerHTML = "Connection destroyed. Please refresh";
-      console.log('Connection destroyed');
+      hangupCall();
     });
     peer.on('error', function (err) {
       console.log(err);
       alert('' + err);
     });
   };
+  function ready() {
+    conn.on('open', function () {
+      conn.send(`<b class="text-success"><span class="icon-user-check"></span> El paciente está conectado.</b>`);
+    });
+    conn.on('data', function (data) {
+      addMessage("<span class=\"peerMsg\"><b class=\"text-danger\">Médico</b>: </span>" + data);
+    });
+    conn.on('close', function () {
+      status.innerHTML = "Connection closed";
+    });
+  }
+  function addMessage(msg) {
+    let now = new Date();
+    let h = now.getHours();
+    let m = addZero(now.getMinutes());
+    let s = addZero(now.getSeconds());
+    if (h > 12)
+      h -= 12;
+    else if (h === 0)
+      h = 12;
+    function addZero(t) {
+      if (t < 10)
+        t = "0" + t;
+      return t;
+    }
+    message.innerHTML = `<br><span class=\"msg-time\">${h}:${m}:${s}</span> - ${msg} ${message.innerHTML}`;
+  }
+  messageBox.addEventListener('keypress', function (e) {
+    let event = e || window.event;
+    let char = event.which || event.keyCode;
+    if (char == '13')
+      sendMessage();
+  })
+  function sendMessage()
+  {
+    if (conn && conn.open) {
+      let msg = messageBox.value;
+      messageBox.value = '';
+      conn.send(msg);
+      addMessage(`<span class=\"selfMsg\"><b class=\"text-info\">Yo</b>: </span>${msg}`);
+    } else {
+      console.log('Connection is closed');
+    }
+  }
   function gotStream(stream) {
     localVideo.srcObject = stream;
     localStream = stream;

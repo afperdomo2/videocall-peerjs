@@ -1,5 +1,5 @@
 (function (window,document) {
-	//  Video Call.
+  //  Video Call.
   let lastPeerId       = null;
   let peer             = null;
   let peerId           = null;
@@ -9,9 +9,15 @@
   let deleteId         = document.querySelector('#deleteId');
   let callButton       = document.querySelector('#callButton');
   let callingButton    = document.querySelector('#callingButton');
+  let hangupButton     = document.querySelector('#hangupButton');
+  let mutedButton      = document.querySelector('#mutedButton');
   let status           = document.querySelector('#status');
   let divPreCall       = document.querySelector('#divPreCall');
   let divCall          = document.querySelector('#divCall');
+  //  Chat.
+  let messageBox       = document.querySelector('#messageBox');
+  let sendButton       = document.querySelector('#sendMessageButton');
+  let message          = document.querySelector('#message');
   //  Streaming.
   const localVideo     = document.querySelector('#localVideo');
   const remoteVideo    = document.querySelector('#remoteVideo');
@@ -19,11 +25,15 @@
   const videoSelect    = document.querySelector('select#videoSrc');
   audioSelect.onchange = videoSelect.onchange = getMediaAndCall;
   let localStream;
-  //  Eventos botones.
   idRemotePeer.value   = '';
+  //  Eventos botones.
   idRemotePeer.onkeyup = validateCallButton;
   idRemotePeer.onblur  = validateCallButton;
-  callButton.onclick   = callPeer;
+  //callButton.onclick = callPeer;
+  callButton.onclick   = join;
+  hangupButton.onclick = hangupCall;
+  sendButton.onclick   = sendMessage;
+  mutedButton.onclick  = mutedSound;
   deleteId.addEventListener('click',()=>{
     idRemotePeer.disabled = false;
     idRemotePeer.value    = '';
@@ -33,6 +43,26 @@
     validateCallButton();
   });
   initialize();
+  function mutedSound()
+  {
+    if(remoteVideo.muted==false){
+      mutedButton.textContent = 'Activar Sonido';
+      remoteVideo.muted = true;
+    }else{
+      mutedButton.textContent = 'Desactivar Sonido';
+      remoteVideo.muted = false;
+    }
+  }
+  function hangupCall()
+  {
+    localVideo.srcObject  = null;
+    remoteVideo.srcObject = null;
+    localStream.getTracks().forEach(track => track.stop());
+    conn.close();
+    conn = null;
+    call.close();
+    call = null;
+  }
   function callPeer()
   {
     idRemotePeer.disabled = true;
@@ -104,13 +134,66 @@
       peer.reconnect();
     });
     peer.on('close', function() {
-      conn = null;
+      hangupCall();
       status.innerHTML = "Connection destroyed. Please refresh";
     });
     peer.on('error', function (err) {
       alert('' + err);
     });
   };
+  function join() {
+    // Cierra la conexión vieja.
+    if (conn) {
+      conn.close();
+    }
+    // Crea una conexión con el par destino.
+    conn = peer.connect(idRemotePeer.value, { reliable: true });
+    conn.on('open', function () {
+      status.innerHTML = "Connected to: " + conn.peer;
+      conn.send(`<b class="text-success"><span class="icon-user-check"></span> El médico está conectado.</b>`);
+      callPeer();
+    });
+    // Handle incoming data (messages only since this is the signal sender)
+    conn.on('data', function (data) {
+      addMessage(`<span class=\"peerMsg\"><b class=\"text-danger\">Paciente:</b></span> ${data}`);
+    });
+    conn.on('close', function () {
+      status.innerHTML = "Connection closed";
+    });
+  };
+  function addMessage(msg) {
+    let now = new Date();
+    let h = now.getHours();
+    let m = addZero(now.getMinutes());
+    let s = addZero(now.getSeconds());
+    if (h > 12)
+      h -= 12;
+    else if (h === 0)
+      h = 12;
+    function addZero(t) {
+      if (t < 10)
+        t = "0" + t;
+      return t;
+    }
+    message.innerHTML = `<br><span class=\"msg-time\">${h}:${m}:${s}h</span> - ${msg} ${message.innerHTML}`;
+  }
+  messageBox.addEventListener('keypress', function (e) {
+    let event = e || window.event;
+    let char = event.which || event.keyCode;
+    if (char == '13')
+      sendMessage();
+  })
+  function sendMessage()
+  {
+    if (conn && conn.open) {
+      let msg = messageBox.value;
+      messageBox.value = '';
+      conn.send(msg);
+      addMessage(`<span class=\"selfMsg\"><b class=\"text-info\">Yo</b>: </span>${msg}`);
+    } else {
+      console.log('Connection is closed');
+    }
+  }
   function validateCallButton(){
     if(idRemotePeer.value!='')
       callButton.disabled = false;
